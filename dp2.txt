@@ -1,0 +1,69 @@
+
+n = 6
+K = 10
+x_a = 2
+
+c = [None, 4, 3, 5, 3, 4, 2]
+v = [None, 6, 7, 4, 2, 4, 3]
+
+# wartość funkcji Bellmana
+phi = [[0] * (K + 1) for _ in range(n + 2)]
+
+# Ostatni wiersz
+for x in range(K + 1):
+    phi[n + 1][x] = 0
+
+for j in range(n, 0, -1):
+    for x_prev in range(K + 1):
+
+        u_min = max(0, v[j] - x_prev)
+        u_max = K - x_prev
+
+        best = float('inf')
+
+        for u in range(u_min, u_max + 1):
+            x_j = x_prev + u - v[j]
+            if 0 <= x_j <= K:
+                cost = c[j] * u + phi[j + 1][x_j]
+                if cost < best:
+                    best = cost
+
+        phi[j][x_prev] = best
+
+# Odtwarzanie trasy
+policy = []
+x_prev = x_a
+
+for j in range(1, n + 1):
+
+    u_min = max(0, v[j] - x_prev)
+    u_max = K - x_prev
+
+    best_u = None
+    best_val = float('inf')
+
+    for u in range(u_min, u_max + 1):
+        x_j = x_prev + u - v[j]
+        if 0 <= x_j <= K:
+            val = c[j] * u + phi[j + 1][x_j]
+            if val < best_val:
+                best_val = val
+                best_u = u
+
+    policy.append(best_u)
+    x_prev = x_prev + best_u - v[j]
+
+print("Optymalny koszt:", phi[1][x_a])
+print("Optymalna strategia u_j:", policy)
+
+def printList(ls, sep='\n'):
+    for r in ls:
+        print(f"{r}", sep=sep)
+
+print(f"tabelka:\n")
+printList(phi)
+
+x_arr = [2]
+for u_j, v_j in zip(policy, v[1:]):
+    x_arr.append(x_arr[-1] + u_j - v_j)
+print(f'\nstan magazynu x: {x_arr}')
